@@ -2,7 +2,13 @@ package com.multiservices.restful.customer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
+import com.google.api.core.ApiFuture;
+import com.google.cloud.firestore.QueryDocumentSnapshot;
+import com.google.cloud.firestore.QuerySnapshot;
+import com.multiservices.restful.dataSource.FireDataSource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -16,12 +22,14 @@ public class CustomerRepository {
 	FirebaseDatabase
 	.getInstance(FirebaseApp.getInstance())
 	.setPersistenceEnabled(true);
-*/
-	/*
+
 	@Autowired
-	private firebaseDatabase db;
-	
-	*/
+	private FirebaseConfig fbConfig;
+*/
+
+	@Autowired
+	FireDataSource db;
+
 	
 	public Customer addCustomer(Customer customer) {	
 		/*
@@ -44,8 +52,7 @@ public class CustomerRepository {
 	
 	public List<Customer>  getAll() {		
 		List<Customer> listResult = new ArrayList<Customer>();
-		
-		/*
+
 		ApiFuture<QuerySnapshot> query = db.getFireStore().collection("customers").get();
 		// ...
 		// query.get() blocks on response
@@ -61,8 +68,7 @@ public class CustomerRepository {
 		for (QueryDocumentSnapshot document : documents) {
 			listResult.add(document.toObject(Customer.class));
 		}
-		*/
-		
+
 		return listResult;
 	}
 	
