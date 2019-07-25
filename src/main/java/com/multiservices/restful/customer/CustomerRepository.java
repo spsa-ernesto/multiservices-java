@@ -1,28 +1,18 @@
 package com.multiservices.restful.customer;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
 import com.google.firebase.database.*;
-import com.multiservices.restful.dataSource.FireDataSource;
 import com.multiservices.restful.util.MathUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @Repository
 public class CustomerRepository {
 	
-	public Customer addCustomer(Customer customer) {
-
+	public Customer addCustomer(@RequestBody Customer customer) {
 		DatabaseReference customersRef = FirebaseDatabase.getInstance().getReference().child("customers");
-/*
-		Map<String, Customer> customer1 = new HashMap<>();
-		customer1.put("alanisawesome", new Customer("June 23, 1912", "Alan Turing"));
-		customer1.put("gracehop", new Customer("December 9, 1906", "Grace Hopper"));
-*/
-		customersRef.setValueAsync(customer);
+		customersRef.push().setValueAsync(customer);
 		return customer;
 	}
 
