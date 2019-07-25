@@ -2,7 +2,7 @@ package com.multiservices.restful.util;
 
 import java.util.List;
 
-public class mathutil {
+public class MathUtil {
 	
 	public static double average (List<Integer> dataList)
 	{

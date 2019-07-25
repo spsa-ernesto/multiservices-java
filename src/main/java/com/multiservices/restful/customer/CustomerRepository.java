@@ -1,97 +1,63 @@
 package com.multiservices.restful.customer;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
+import java.util.Map;
 
-import com.google.api.core.ApiFuture;
-import com.google.cloud.firestore.QueryDocumentSnapshot;
-import com.google.cloud.firestore.QuerySnapshot;
+import com.google.firebase.database.*;
 import com.multiservices.restful.dataSource.FireDataSource;
+import com.multiservices.restful.util.MathUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public class CustomerRepository {
 	
-	//@Autowired
-	//private FirebaseAuth db;
-	
-	//private FirebaseAuth.getInstance().
+	public Customer addCustomer(Customer customer) {
+
+		DatabaseReference customersRef = FirebaseDatabase.getInstance().getReference().child("customers");
 /*
-	FirebaseDatabase
-	.getInstance(FirebaseApp.getInstance())
-	.setPersistenceEnabled(true);
-
-	@Autowired
-	private FirebaseConfig fbConfig;
+		Map<String, Customer> customer1 = new HashMap<>();
+		customer1.put("alanisawesome", new Customer("June 23, 1912", "Alan Turing"));
+		customer1.put("gracehop", new Customer("December 9, 1906", "Grace Hopper"));
 */
-
-	@Autowired
-	FireDataSource db;
-
-	
-	public Customer addCustomer(Customer customer) {	
-		/*
-		DocumentReference docRef = db
-				.getFireStore()
-				.collection("customers")
-				.document(customer.getCustomerId().toString());
-		
-		ApiFuture<WriteResult> result = docRef.set(customer);
-		try {
-			System.out.println("Update time : " + result.get().getUpdateTime());
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		} catch (ExecutionException e) {
-			e.printStackTrace();
-		}
-		*/
+		customersRef.setValueAsync(customer);
 		return customer;
 	}
+
+	private static List<Customer> customerList;
 	
-	public List<Customer>  getAll() {		
-		List<Customer> listResult = new ArrayList<Customer>();
+	public List<Customer>  getAll() {
+		FirebaseDatabase.getInstance().getReference().child("customers")
+				.addListenerForSingleValueEvent(new ValueEventListener() {
+					@Override
+					public void onDataChange(DataSnapshot dataSnapshot) {
+						customerList = new ArrayList<>();
+						for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+							customerList.add(snapshot.getValue(Customer.class));
+							System.out.println(snapshot.getValue(Customer.class));
+						}
+					}
 
-		ApiFuture<QuerySnapshot> query = db.getFireStore().collection("customers").get();
-		// ...
-		// query.get() blocks on response
-		QuerySnapshot querySnapshot = null;
-		try {
-			querySnapshot = query.get();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		} catch (ExecutionException e) {
-			e.printStackTrace();
-		}
-		List<QueryDocumentSnapshot> documents = querySnapshot.getDocuments();
-		for (QueryDocumentSnapshot document : documents) {
-			listResult.add(document.toObject(Customer.class));
-		}
-
-		return listResult;
+					@Override
+					public void onCancelled(DatabaseError databaseError) {
+						System.out.println("The read failed: " + databaseError.getCode());
+					}
+				});
+		return customerList;
 	}
 	
-	public KpiData getKpi() {		
-		/*
-		List<Integer> customerAgeList = new ArrayList<Integer>();		
+	public KpiData getKpi() {
 
-		ApiFuture<QuerySnapshot> future = db.getFireStore().collection("customers").get();
-		try {
-			List<QueryDocumentSnapshot> documents = future.get().getDocuments();
-			for (QueryDocumentSnapshot document : documents) {
-				customerAgeList.add(document.toObject(Customer.class).getAge());
-			}
-		} catch (InterruptedException | ExecutionException e) {
-			e.printStackTrace();
+		List<Integer> customerAgeList = new ArrayList<Integer>();
+		this.getAll();
+		for (Customer customer : customerList) {
+			customerAgeList.add(customer.getAge());
 		}
-		
-		double averageAge = mathutil.average(customerAgeList);
-		double standardDeviation = mathutil.standardDeviation(customerAgeList);
-		*/
-		
-		//return new KpiData(averageAge, standardDeviation);
-		return new KpiData(25, 35);
-	}	
+		double averageAge = MathUtil.average(customerAgeList);
+		double standardDeviation = MathUtil.standardDeviation(customerAgeList);
 
+		return new KpiData(averageAge, standardDeviation);
+	}
 }
