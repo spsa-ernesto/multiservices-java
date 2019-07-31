@@ -14,7 +14,7 @@ public class CustomerService implements ICustomerService {
 	public Customer addCustomer(Customer customer) {		
 		return customerRepository.addCustomer(customer);
 	}
-	
+
 	@Override
 	public List<Customer> getAll() {		
 		return customerRepository.getAll();

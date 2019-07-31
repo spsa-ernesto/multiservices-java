@@ -1,6 +1,7 @@
 package com.multiservices.restful.customer;
 
 import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.annotations.Api;
@@ -27,8 +28,9 @@ public class CustomerController {
 
 	@CrossOrigin(origins = "http://localhost:3000")
 	@RequestMapping(value="/customers", method = RequestMethod.GET)
-	public List<Customer>  getAll() {		
-		return this.customerService.getAll();
+	public List<Customer>  getAll() {
+		List<Customer> result = this.customerService.getAll();
+		return result;
 	}
 
 	@CrossOrigin(origins = "http://localhost:3000")

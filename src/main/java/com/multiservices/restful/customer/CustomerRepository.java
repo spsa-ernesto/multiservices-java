@@ -2,6 +2,7 @@ package com.multiservices.restful.customer;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import com.google.firebase.database.*;
 import com.multiservices.restful.util.MathUtil;
 import org.springframework.stereotype.Repository;
@@ -9,42 +10,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @Repository
 public class CustomerRepository {
-	private static Integer nextCustomerId;
+	private static List<Customer> resultList;
 	private static List<Customer> customerList;
+	private static Integer nextCustomerId;
 
-	private Integer getNextCustomerId() {
-		FirebaseDatabase.getInstance().getReference().child("customers")
-				.addListenerForSingleValueEvent(new ValueEventListener() {
-					@Override
-					public void onDataChange(DataSnapshot dataSnapshot) {
-						nextCustomerId = (int)(long) dataSnapshot.getChildrenCount() + 1;
-					}
-
-					@Override
-					public void onCancelled(DatabaseError databaseError) {
-						System.out.println("The read failed: " + databaseError.getCode());
-					}
-				});
-		return nextCustomerId;
-	}
-	
 	public Customer addCustomer(@RequestBody Customer customer) {
 		DatabaseReference customersRef = FirebaseDatabase.getInstance().getReference().child("customers");
-		customer.setCustomerId(getNextCustomerId());
-		customersRef.push().setValueAsync(customer);
-		return customer;
-	}
-	
-	public List<Customer> getAll() {
-		FirebaseDatabase.getInstance().getReference().child("customers")
-				.addListenerForSingleValueEvent(new ValueEventListener() {
+		customersRef.addListenerForSingleValueEvent(new ValueEventListener() {
 					@Override
 					public void onDataChange(DataSnapshot dataSnapshot) {
-						customerList = new ArrayList<>();
-						for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-							customerList.add(snapshot.getValue(Customer.class));
-							System.out.println(snapshot.getValue(Customer.class));
-						}
+						nextCustomerId = (int) (long) dataSnapshot.getChildrenCount() + 1;
+						customer.setCustomerId(nextCustomerId);
+						customersRef.push().setValueAsync(customer);
 					}
 
 					@Override
@@ -52,14 +29,38 @@ public class CustomerRepository {
 						System.out.println("The read failed: " + databaseError.getCode());
 					}
 				});
-		return customerList;
+		return customer;
+	}
+
+	public List<Customer> getAll() {
+		getAll(list -> resultList = list);
+		return resultList;
+	}
+
+	private void getAll(FirebaseCallback utilCallback) {
+		customerList = new ArrayList<>();
+		FirebaseDatabase.getInstance().getReference().child("customers")
+			.addListenerForSingleValueEvent(new ValueEventListener() {
+				@Override
+				public void onDataChange(DataSnapshot dataSnapshot) {
+					for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+						customerList.add(snapshot.getValue(Customer.class));
+					}
+					utilCallback.onCallback(customerList);
+				}
+
+				@Override
+				public void onCancelled(DatabaseError databaseError) {
+					System.out.println("The read failed: " + databaseError.getCode());
+				}
+			});
 	}
 	
 	public KpiData getKpi() {
-
 		List<Integer> customerAgeList = new ArrayList<Integer>();
-		this.getAll();
-		for (Customer customer : customerList) {
+		getAll(list -> resultList = list);
+
+		for (Customer customer : resultList) {
 			customerAgeList.add(customer.getAge());
 		}
 		double averageAge = MathUtil.average(customerAgeList);
@@ -84,5 +85,9 @@ public class CustomerRepository {
 						System.out.println("Delete failed: " + databaseError.getCode());
 					}
 		});
+	}
+
+	private interface FirebaseCallback {
+		void onCallback(List<Customer> list);
 	}
 }
