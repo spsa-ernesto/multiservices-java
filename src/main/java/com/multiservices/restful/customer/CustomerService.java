@@ -23,6 +23,10 @@ public class CustomerService implements ICustomerService {
 	@Override
 	public KpiData getKpi() {
 		return customerRepository.getKpi();
-	}	
+	}
 
+	@Override
+	public void deleteCustomer(Integer customerId) {
+		customerRepository.deleteCustomer(customerId);
+	}
 }

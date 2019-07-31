@@ -11,4 +11,6 @@ public interface ICustomerService {
 	public List<Customer> getAll();
 	
 	public KpiData getKpi();
+
+	public void deleteCustomer(Integer customerId);
 }
