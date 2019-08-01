@@ -1,5 +1,7 @@
 package com.multiservices.restful.util;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 public class MathUtil {
@@ -12,7 +14,7 @@ public class MathUtil {
 	        result += dataList.get(i);
 	    }
 
-	    return result / dataList.size();
+	    return round(result / dataList.size(), 2);
 	}	
 
 	public static double standardDeviation (List<Integer> dataList)
@@ -29,7 +31,14 @@ public class MathUtil {
 
 	    double averageOfDiffs = (double) squrDiffToAverageSum / (double) (dataList.size());
 
-	    return Math.sqrt(averageOfDiffs);
+	    return round(Math.sqrt(averageOfDiffs), 2);
 	}
-	
+
+	public static double round(double value, int places) {
+		if (places < 0) throw new IllegalArgumentException();
+
+		BigDecimal bd = new BigDecimal(value);
+		bd = bd.setScale(places, RoundingMode.HALF_UP);
+		return bd.doubleValue();
+	}
 }

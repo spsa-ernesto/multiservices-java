@@ -37,16 +37,17 @@ public class CustomerRepository {
 		return resultList;
 	}
 
-	private void getAll(FirebaseCallback utilCallback) {
+	private void getAll(FirebaseCallback firebaseCallback) {
 		customerList = new ArrayList<>();
 		FirebaseDatabase.getInstance().getReference().child("customers")
 			.addListenerForSingleValueEvent(new ValueEventListener() {
 				@Override
 				public void onDataChange(DataSnapshot dataSnapshot) {
+					customerList.clear();
 					for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
 						customerList.add(snapshot.getValue(Customer.class));
 					}
-					utilCallback.onCallback(customerList);
+					firebaseCallback.onCallback(customerList);
 				}
 
 				@Override
